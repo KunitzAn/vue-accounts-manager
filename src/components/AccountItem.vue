@@ -1,40 +1,51 @@
 <template>
   <div class="account-row">
     <!-- Метки -->
-    <input
-      class="input labels"
-      v-model="labelsInput"
-      maxlength="50"
-      placeholder="Метки (через ;)"
-      @blur="onBlurLabels"
-    />
+    <div class="field">
+      <input
+        class="input labels"
+        v-model="labelsInput"
+        maxlength="50"
+        placeholder="Метки (через ;)"
+        @blur="onBlurLabels"
+      />
+      <!-- Можно подсказку для меток, если нужно -->
+    </div>
 
     <!-- Тип записи -->
-    <select class="input" v-model="typeLocal" @change="onChangeType">
-      <option value="Локальная">Локальная</option>
-      <option value="LDAP">LDAP</option>
-    </select>
+    <div class="field">
+      <select class="input" v-model="typeLocal" @change="onChangeType">
+        <option value="Локальная">Локальная</option>
+        <option value="LDAP">LDAP</option>
+      </select>
+    </div>
 
     <!-- Логин -->
-    <input
-      class="input"
-      v-model="loginLocal"
-      maxlength="100"
-      placeholder="Логин"
-      @blur="onBlurLogin"
-    />
-
-    <!-- Пароль (показывается только для Локальная) + копирование -->
-    <div v-if="typeLocal === 'Локальная'" class="password-wrap">
+    <div class="field">
       <input
-        class="input"
+        :class="['input', { invalid: currentErrors.login }]"
+        v-model="loginLocal"
+        maxlength="100"
+        placeholder="Логин"
+        @blur="onBlurLogin"
+      />
+      <span v-if="currentErrors.login" class="error-text">Логин обязателен и до 100 символов</span>
+    </div>
+
+    <!-- Пароль -->
+    <div class="field password-wrap">
+      <input
+        v-if="typeLocal === 'Локальная'"
+        :class="['input', { invalid: currentErrors.password }]"
         type="password"
         v-model="passwordLocal"
         maxlength="100"
         placeholder="Пароль"
         @blur="onBlurPassword"
       />
+
       <button
+        v-if="typeLocal === 'Локальная'"
         class="copy-btn"
         type="button"
         @click="copyPassword"
@@ -45,15 +56,19 @@
       </button>
 
       <span v-if="copied" class="copied-tip">Скопировано</span>
+
+      <span v-if="typeLocal === 'Локальная' && currentErrors.password" class="error-text">Пароль обязателен и до 100 символов</span>
     </div>
 
-    <!-- Удаление -->
-    <button class="btn-delete" @click="remove">🗑</button>
+    <!-- удалить -->
+    <div class="field actions">
+      <button class="btn-delete" @click="remove">🗑</button>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import type { Account } from '../types/account';
 import { useAccountsStore } from '../store/accounts';
 
@@ -61,13 +76,18 @@ const props = defineProps<{ account: Account }>();
 const store = useAccountsStore();
 
 const labelsInput = ref<string>(props.account.labels.map(l => l.text).join('; '));
-const typeLocal = ref(props.account.type);
-const loginLocal = ref(props.account.login);
-const passwordLocal = ref(props.account.password ?? '');
+const typeLocal = ref<Account['type']>(props.account.type);
+const loginLocal = ref<string>(props.account.login);
+const passwordLocal = ref<string>(props.account.password ?? '');
 
 const copied = ref(false);
 
-// Синхронизируемся, если стор обновит аккаунт извне
+// Текущее состояние ошибок (если в сторе есть — используем; иначе false)
+const currentErrors = computed(() => ({
+  login: !!props.account.errors?.login,
+  password: !!props.account.errors?.password
+}));
+
 watch(() => props.account, (newA) => {
   labelsInput.value = newA.labels.map(l => l.text).join('; ');
   typeLocal.value = newA.type;
@@ -75,27 +95,18 @@ watch(() => props.account, (newA) => {
   passwordLocal.value = newA.password ?? '';
 }, { deep: true });
 
-// Метки — при blur парсим на массив объектов { text: '...' }
 function onBlurLabels() {
   labelsInput.value = labelsInput.value.slice(0, 50);
-  const parsed = labelsInput.value
-    .split(';')
-    .map(s => s.trim())
-    .filter(Boolean);
+  const parsed = labelsInput.value.split(';').map(s => s.trim()).filter(Boolean);
   const labels = parsed.map(t => ({ text: t }));
   store.updateAccount(props.account.id, { labels });
 }
 
-// Изменение типа — при выборе LDAP пароль становится null
 function onChangeType() {
-  const newType = typeLocal.value as Account['type'];
-  store.updateAccount(props.account.id, {
-    type: newType,
-    password: newType === 'LDAP' ? null : (passwordLocal.value ?? '')
-  });
+  const newType = typeLocal.value;
+  store.updateAccount(props.account.id, { type: newType, password: newType === 'LDAP' ? null : (passwordLocal.value ?? '') });
 }
 
-// Логин / пароль сохраняем на blur
 function onBlurLogin() {
   loginLocal.value = loginLocal.value.slice(0, 100);
   store.updateAccount(props.account.id, { login: loginLocal.value });
@@ -106,12 +117,10 @@ function onBlurPassword() {
   store.updateAccount(props.account.id, { password: passwordLocal.value });
 }
 
-// Удаление
 function remove() {
   store.removeAccount(props.account.id);
 }
 
-// Копирование пароля в буфер
 function copyPassword() {
   const text = passwordLocal.value || props.account.password || '';
   if (!text) return;
@@ -120,19 +129,19 @@ function copyPassword() {
       copied.value = true;
       setTimeout(() => (copied.value = false), 1500);
     })
-    .catch(() => {
-      // на старых браузерах просто ничего, можно показать alert
-      alert('Не удалось скопировать в буфер обмена');
-    });
+    .catch(() => { alert('Не удалось скопировать'); });
 }
 </script>
 
 <style scoped>
-.account-row { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 40px; gap: 8px; align-items: center; }
+.account-row { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 40px; gap: 8px; align-items: start; }
+.field { display: flex; flex-direction: column; }
 .input { padding: 8px; border: 1px solid #ddd; border-radius: 6px; width: 100%; box-sizing: border-box; }
+.invalid { border-color: #ff4d4f; box-shadow: 0 0 0 3px rgba(255,77,79,0.06); }
+.error-text { color: #ff4d4f; font-size: 12px; margin-top: 4px; }
 .password-wrap { display: flex; gap: 8px; align-items: center; }
 .copy-btn { border: none; background: #f1f5f9; padding: 6px 8px; border-radius: 6px; cursor: pointer; }
-.copy-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .copied-tip { font-size: 12px; color: #22c55e; margin-left: 6px; }
-.btn-delete { background: none; border: none; cursor: pointer; font-size: 18px; }
+.btn-delete { background: none; border: none; cursor: pointer; font-size: 18px; margin-top: 8px; }
+.actions { display: flex; align-items: center; }
 </style>
