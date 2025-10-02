@@ -65,8 +65,8 @@ vue-accounts-manager/
 │   ├── types/
 │   │   └── account.ts            # Interfaces: Account, Label, Errors
 │   ├── App.vue                   # Корневой компонент (рендерит AccountsForm)
-│   └── main.ts                   # Входная точка, импорт Pinia и стилей
-├── style.css                     # Глобальные стили (опционально)
+│   ├── main.ts                   # Входная точка, импорт Pinia и стилей
+│   └──style.css                     # Глобальные стили (опционально)
 ├── package.json                  # Зависимости (vue, pinia, typescript)
 └── README.md                     # Этот файл
 ```
