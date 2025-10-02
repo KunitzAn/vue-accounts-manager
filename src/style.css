@@ -1,9 +1,30 @@
-body {
-  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-  background: #f8fafb;
-  color: #222;
-  margin: 0;
-  padding: 16px;
+/* Global base styles */
+:root {
+  --bg: #f8fafb;
+  --card: #ffffff;
+  --muted: #666666;
 }
-#app { padding: 8px; }
-button { cursor: pointer; }
+
+html, body, #app {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  background: var(--bg);
+  color: #111827;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Container */
+#app { padding: 20px; display: flex; justify-content: center; align-items: flex-start; }
+
+/* small utility */
+.hidden-mobile { display: inline-block; }
+
+/* Responsive rules */
+@media (max-width: 800px) {
+  .hidden-mobile { display: none; }
+}

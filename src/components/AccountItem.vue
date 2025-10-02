@@ -1,6 +1,5 @@
 <template>
   <div class="account-row">
-    <!-- Метки -->
     <div class="field">
       <input
         class="input labels"
@@ -9,10 +8,8 @@
         placeholder="Метки (через ;)"
         @blur="onBlurLabels"
       />
-      <!-- Можно подсказку для меток, если нужно -->
     </div>
 
-    <!-- Тип записи -->
     <div class="field">
       <select class="input" v-model="typeLocal" @change="onChangeType">
         <option value="Локальная">Локальная</option>
@@ -20,7 +17,6 @@
       </select>
     </div>
 
-    <!-- Логин -->
     <div class="field">
       <input
         :class="['input', { invalid: currentErrors.login }]"
@@ -32,7 +28,6 @@
       <span v-if="currentErrors.login" class="error-text">Логин обязателен и до 100 символов</span>
     </div>
 
-    <!-- Пароль -->
     <div class="field password-wrap">
       <input
         v-if="typeLocal === 'Локальная'"
@@ -43,7 +38,6 @@
         placeholder="Пароль"
         @blur="onBlurPassword"
       />
-
       <button
         v-if="typeLocal === 'Локальная'"
         class="copy-btn"
@@ -54,13 +48,10 @@
       >
         📋
       </button>
-
       <span v-if="copied" class="copied-tip">Скопировано</span>
-
       <span v-if="typeLocal === 'Локальная' && currentErrors.password" class="error-text">Пароль обязателен и до 100 символов</span>
     </div>
 
-    <!-- удалить -->
     <div class="field actions">
       <button class="btn-delete" @click="remove">🗑</button>
     </div>
@@ -81,8 +72,6 @@ const loginLocal = ref<string>(props.account.login);
 const passwordLocal = ref<string>(props.account.password ?? '');
 
 const copied = ref(false);
-
-// Текущее состояние ошибок (если в сторе есть — используем; иначе false)
 const currentErrors = computed(() => ({
   login: !!props.account.errors?.login,
   password: !!props.account.errors?.password
@@ -144,4 +133,11 @@ function copyPassword() {
 .copied-tip { font-size: 12px; color: #22c55e; margin-left: 6px; }
 .btn-delete { background: none; border: none; cursor: pointer; font-size: 18px; margin-top: 8px; }
 .actions { display: flex; align-items: center; }
+
+/* Responsive: под мобильные устройства делаем колонки вертикальными */
+@media (max-width: 600px) {
+  .account-row { grid-template-columns: 1fr; gap: 10px; }
+  .password-wrap { flex-direction: row; align-items: center; }
+  .btn-delete { justify-self: end; }
+}
 </style>

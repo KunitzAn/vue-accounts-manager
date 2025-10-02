@@ -66,5 +66,13 @@ const filteredAccounts = computed(() => {
 .table-headers { display:grid; grid-template-columns: 2fr 1fr 1fr 1fr 40px; gap:8px; font-weight:600; color:#666; margin-top:8px; }
 .rows { margin-top:8px; display:flex; flex-direction:column; gap:8px; }
 .search-input { padding:6px 8px; border-radius:6px; border:1px solid #ddd; }
-.empty { color:#666; padding:12px; text-align:center; }
+
+/* Mobile tweaks */
+@media (max-width: 600px) {
+  .accounts-form { padding: 12px; }
+  .table-headers { display: none; } /* заголовки скрываем, т.к. каждая запись становится блочным элементом */
+  .header { flex-direction: column; align-items: stretch; gap: 8px; }
+  .header-controls { width: 100%; justify-content: space-between; }
+  .btn-add { align-self: flex-end; }
+}
 </style>
