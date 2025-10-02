@@ -25,7 +25,17 @@ export const useAccountsStore = defineStore('accounts', {
     updateAccount(id: string, patch: Partial<Account>) {
       const idx = this.accounts.findIndex(a => a.id === id);
       if (idx === -1) return;
-      const updated = { ...this.accounts[idx], ...patch };
+      
+      const currentAccount = this.accounts[idx]!; // добавляем ! так как мы уже проверили что idx !== -1
+      const updated: Account = {
+        id: currentAccount.id,
+        labels: patch.labels ?? currentAccount.labels,
+        type: patch.type ?? currentAccount.type,
+        login: patch.login ?? currentAccount.login,
+        password: patch.password ?? currentAccount.password,
+        isValid: patch.isValid ?? currentAccount.isValid,
+        errors: patch.errors ?? currentAccount.errors
+      };
 
       // если тип LDAP — пароль хранится как null
       if (updated.type === 'LDAP') {
@@ -37,7 +47,7 @@ export const useAccountsStore = defineStore('accounts', {
 
       this.accounts[idx] = updated;
       // валидация и сохранение
-      this.validateAndSave(this.accounts[idx]);
+      this.validateAndSave(updated);
     },
 
     removeAccount(id: string) {
