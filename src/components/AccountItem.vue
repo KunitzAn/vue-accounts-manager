@@ -71,28 +71,31 @@ function onBlurLabels() {
   const parsed = labelsInput.value.split(';').map(s => s.trim()).filter(Boolean)
   const labels = parsed.map(t => ({ text: t }))
   store.updateAccount(props.account.id, { labels })
-  // Если валидация для labels нужна — добавь: store.validateAccount(props.account.id)
 }
 
 function onChangeType() {
   const newType = typeLocal.value
   store.updateAccount(props.account.id, { type: newType, password: newType === 'LDAP' ? null : (props.account.password ?? '') })
-  // Если нужно: store.validateAccount(props.account.id)
 }
 
 function onBlurLogin() {
   loginLocal.value = loginLocal.value.slice(0, 100)
   store.updateAccount(props.account.id, { login: loginLocal.value })
-  store.validateAccount(props.account.id)  // Явный вызов валидации для login
 }
 
 function onBlurPassword() {
   passwordLocal.value = passwordLocal.value.slice(0, 100)
   store.updateAccount(props.account.id, { password: passwordLocal.value })
-  store.validateAccount(props.account.id)  // Явный вызов валидации для password
 }
 
 function remove() {
   store.removeAccount(props.account.id)
 }
 </script>
+
+<style scoped>
+.account-row { display:grid; grid-template-columns: 2fr 1fr 1fr 1fr 40px; gap:8px; align-items:center; }
+.input { padding:8px; border:1px solid #ddd; border-radius:6px; width:100%; box-sizing:border-box; }
+.invalid { border-color: #ff4d4f; box-shadow: 0 0 0 3px rgba(255,77,79,0.06); }
+.btn-delete { background:none; border:none; cursor:pointer; font-size:18px; }
+</style>
