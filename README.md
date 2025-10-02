@@ -15,7 +15,7 @@
 
 1. Клонируйте репозиторий:
    ```
-   git clone https://github.com/your-username/vue-accounts-manager.git
+   git clone https://github.com/KunitzAn/vue-accounts-manager.git
    cd vue-accounts-manager
    ```
 
